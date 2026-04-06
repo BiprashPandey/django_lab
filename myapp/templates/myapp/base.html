@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{% if request.COOKIES.theme %}{{ request.COOKIES.theme }}{% else %}light{% endif %}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Django Lab{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    [data-theme="dark"] { background:#1a1a2e; color:#eee; }
+    [data-theme="dark"] .card { background:#16213e; border-color:#0f3460; }
+    [data-theme="dark"] .navbar { background:#0f3460 !important; }
+    .navbar-brand { font-weight:700; letter-spacing:1px; }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{# ── Navigation bar – uses {% url %} tag for reverse URL resolution ── #}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'myapp:home' %}">🚀 Django Lab</a>
+    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="{% url 'myapp:home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'myapp:post_list' %}">Posts</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'myapp:contact' %}">Contact</a></li>
+        {% if user.is_staff %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'myapp:audit_log' %}">Audit Log</a></li>
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav">
+        {# Template tag: user.is_authenticated #}
+        {% if user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'myapp:dashboard' %}">
+            👤 {{ user.get_full_name|default:user.username }}
+          </a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'myapp:logout' %}">Logout</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'myapp:login' %}">Login</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'myapp:register' %}">Register</a></li>
+        {% endif %}
+        {# Theme toggle via cookie #}
+        {% if request.COOKIES.theme == 'dark' %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'myapp:set_theme' 'light' %}">☀️</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'myapp:set_theme' 'dark' %}">🌙</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+{# ── Flash messages from Django messages framework ── #}
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ── Main content block – child templates override this ── #}
+<main class="container my-4">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="bg-dark text-light py-3 mt-5">
+  <div class="container text-center">
+    <small>Django Lab &copy; 2025 | Visits this session: <strong>{{ request.session.visit_count|default:"0" }}</strong></small>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
